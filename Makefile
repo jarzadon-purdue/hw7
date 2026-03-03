@@ -1,7 +1,8 @@
-CFLAGS = -std=c99 -g -Wall -Wshadow --pedantic -Wvla -Werror
+TESTS = -DTEST_DIVIDE -DTEST_INTERLEAVE -DTEST_SHUFFLE
+CFLAGS = -std=c99 -g -Wall -Wshadow --pedantic -Wvla -Werror $(TESTS)
 GCC = gcc $(CFLAGS)
 EXEC = hw7
-OBJS = shuffle.o
+OBJS = main.o shuffle.o
 
 $(EXEC): $(OBJS)
 	$(GCC) $(OBJS) -o $(EXEC)

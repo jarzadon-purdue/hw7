@@ -31,6 +31,19 @@ static void printDeck(CardDeck deck)
 // cards from the bottom of the original deck.
 void divide(CardDeck origDeck, CardDeck * leftDeck, CardDeck * rightDeck)
 {
+  int k = origDeck.size;
+
+  // splits each deck at a midpoint based on i
+  for (int i = 0; i < k - 1; i++) {
+    int leftSize = i + 1;
+    int rightSize = k - leftSize;
+
+    leftDeck[i].size = leftSize;
+    rightDeck[i].size = rightSize;
+
+    // fills in the left deck with its required amount of cards, then puts the rest in the right
+    memcpy(leftDeck[i].cards, origDeck.cards, leftSize * sizeof(char));
+    memcpy(rightDeck[i].cards, &origDeck.cards[leftSize], rightSize * sizeof(char));}
 }
 #endif
 
@@ -76,9 +89,35 @@ void divide(CardDeck origDeck, CardDeck * leftDeck, CardDeck * rightDeck)
 // function, please keep it inside #ifdef TEST_INTERLEAVE and #endif
 // so that the function can be removed for grading other parts of the
 // program.
+
+void interleaveHelper(CardDeck left, int leftIdx, CardDeck right, int rightIdx, CardDeck result, int resIdx) {
+    // base case of both hands being empty
+    if (leftIdx == left.size && rightIdx == right.size) {
+        printDeck(result);
+        return;
+    }
+
+    // tries to take a card from the left
+    if (leftIdx < left.size) {
+        result.cards[resIdx] = left.cards[leftIdx];
+        interleaveHelper(left, leftIdx + 1, right, rightIdx, result, resIdx + 1);
+    }
+
+    // tries to take a card from the right
+    if (rightIdx < right.size) {
+        result.cards[resIdx] = right.cards[rightIdx];
+        interleaveHelper(left, leftIdx, right, rightIdx + 1, result, resIdx + 1);
+    }
+}
+
 void interleave(CardDeck leftDeck, CardDeck rightDeck)
 {
-  
+  // creates a result deck to store the combinations
+  CardDeck result;
+  result.size = leftDeck.size + rightDeck.size;
+
+  // use recursion of helper function
+  interleaveHelper(leftDeck, 0, rightDeck, 0, result, 0);
 }
 #endif
 
@@ -98,12 +137,23 @@ void interleave(CardDeck leftDeck, CardDeck rightDeck)
 //
 void shuffle(CardDeck origDeck)
 {
-  origDeck.size = sizeof(origDeck.cards);
-  int numDecks = origDeck.size - 1;
-  
-  while(temp < k) {
-    
+  // # of ways the deck can be split
+  int numSplits = origDeck.size - 1;
+
+  // initializes arrays to contain a max sized split
+  CardDeck * leftDecks = malloc(numSplits * sizeof(CardDeck));
+  CardDeck * rightDecks = malloc(numSplits * sizeof(CardDeck));
+
+  // divides deck into its constituent split decks
+  divide(origDeck, leftDecks, rightDecks);
+
+  // shuffles and outputs resulting decks
+  for (int i = 0; i < numSplits; i++) {
+      interleave(leftDecks[i], rightDecks[i]);
   }
 
+  // freeing memory
+  free(leftDecks);
+  free(rightDecks);
 }
 #endif
